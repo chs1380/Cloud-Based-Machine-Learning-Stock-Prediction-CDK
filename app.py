@@ -1,34 +1,62 @@
-#!/usr/bin/env python3
+from aws_cdk import core
+from vpc_construct.fyp_vpc import VPC_stack
+from Database.Auroa_Serverless import Database_Stack
+from flux_cd.fluxcd_construct import  FluxcdConstruct
+from eks_cluster_construct.eks_cluster_construct import ClusterConstruct
 import os
 
-from aws_cdk import core as cdk
-
-# For consistency with TypeScript code, `cdk` is the preferred import name for
-# the CDK's core module.  The following line also imports it as `core` for use
-# with examples from the CDK Developer's Guide, which are in the process of
-# being updated to use `cdk`.  You may delete this import if you don't need it.
-from aws_cdk import core
-
-from cdk_bu_fyp.cdk_bu_fyp_stack import CdkBuFypStack
+git_auth_user = os.environ["GIT_AUTH_USER"]
+git_auth_key = os.environ["GIT_AUTH_KEY"]
 
 
 app = core.App()
-CdkBuFypStack(app, "CdkBuFypStack",
-    # If you don't specify 'env', this stack will be environment-agnostic.
-    # Account/Region-dependent features and context lookups will not work,
-    # but a single synthesized template can be deployed anywhere.
 
-    # Uncomment the next line to specialize this stack for the AWS Account
-    # and Region that are implied by the current CLI configuration.
+name = app.node.try_get_context("name")
+region = app.node.try_get_context("region")
 
-    #env=core.Environment(account=os.getenv('CDK_DEFAULT_ACCOUNT'), region=os.getenv('CDK_DEFAULT_REGION')),
+aws_env = core.Environment(region=region)
 
-    # Uncomment the next line if you know exactly what Account and Region you
-    # want to deploy the stack to. */
+stack = core.Stack(scope=app, env=aws_env, id=f"{name}-stack")
 
-    #env=core.Environment(account='123456789012', region='us-east-1'),
+vpc_construct = VPC_stack(
+    app,
+    "infraVpc",
+    env={'region': 'us-east-1',
+         'account': '169747529889'}
+)
 
-    # For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
-    )
+database_construct = Database_Stack(
+    app,
+    "auroraDB",
+    vpc_construct.vpc,
+    env={'region': 'us-east-1',
+         'account':'169747529889'}
+)
+
+database_construct.add_dependency(vpc_construct)
+
+# kubernetes_cluster='pass'
+
+
+cluster_construct = ClusterConstruct(
+    scope=stack,
+    id=f"{name}-cluster",
+    cluster_name=f"{name}-cluster"
+)
+
+
+fluxcd_construct = FluxcdConstruct(
+    scope=stack,
+    id=f"{name}-fluxcd",
+    git_user=git_auth_user,
+    git_password=git_auth_key,
+    eks_base_cluster=cluster_construct.cluster
+)
+
+# route_53='pass'
+
+# cloudfront='pass'
+
+# cicd_pipeline='pass'
 
 app.synth()
