@@ -39,64 +39,7 @@ class FluxcdCluster():
         }
 
     def _base_manifest(self, git_repository):
-        return [{
-            'apiVersion': 'apps/v1',
-            'kind': 'Deployment',
-            'metadata': {
-                'name': 'memcached',
-                'namespace': 'default'},
-            'spec': {
-                'replicas': 1,
-                'selector': {
-                    'matchLabels': {
-                        'name': 'memcached'
-                    }
-                },
-                'template': {
-                    'metadata': {
-                        'labels': {
-                            'name': 'memcached'
-                        }
-                    },
-                    'spec': {
-                        'nodeSelector': {
-                            'beta.kubernetes.io/os': 'linux'
-                        }, 'containers': [{
-                            'name': 'memcached',
-                            'image': 'memcached:1.5.20',
-                            'imagePullPolicy': 'IfNotPresent',
-                            'args': ['-m 512', '-I 5m', '-p 11211'],
-                            'ports': [{
-                                'name': 'clients',
-                                'containerPort': 11211
-                            }],
-                            'securityContext': {
-                                'runAsUser': 11211,
-                                'runAsGroup': 11211,
-                                'allowPrivilegeEscalation': False
-                            }
-                        }]
-                    }
-                }
-            }
-        },
-            {
-                'apiVersion': 'v1',
-                'kind': 'Service',
-                'metadata': {
-                    'name': 'memcached',
-                    'namespace': 'default'
-                },
-                'spec': {
-                    'ports': [{
-                        'name': 'memcached',
-                        'port': 11211
-                    }],
-                    'selector': {
-                        'name': 'memcached'
-                    }
-                }
-            },
+        return [
             {
                 'apiVersion': 'v1',
                 'kind': 'ServiceAccount',
@@ -236,7 +179,7 @@ class FluxcdCluster():
                                          '--git-url=https://$(GIT_AUTHUSER):$(GIT_AUTHKEY)@' + git_repository,
                                          '--git-branch=master',
                                          '--git-label=flux',
-                                         '--git-email=aws-example@users.noreply.github.com',
+                                         '--git-email=leungwinghin599@gmail.com',
                                          '--listen-metrics=:3031'
                                          ]
                             }]

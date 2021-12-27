@@ -2,7 +2,7 @@ from aws_cdk import (aws_rds as rds,
                      aws_ec2 as ec2,
                      core
                      )
-from vpc_construct.fyp_vpc import VPC_stack
+from cdk.vpc_construct.fyp_vpc import VPC_stack
 
 # create vpc with 4 subnet
 class Database_Stack(core.Stack):
@@ -20,3 +20,5 @@ class Database_Stack(core.Stack):
                                              vpc=props,
                                              vpc_subnets={"subnet_type": ec2.SubnetType.PRIVATE},
                                              )
+        self.database_endpoint=self.cluster.cluster_endpoint
+
