@@ -25,13 +25,6 @@ database_construct = Database_Stack(
 
 database_construct.add_dependency(vpc_construct)
 
-docker_pipeline_construct= Ecr_Commit_Construct(
-    app,
-    "ECR-REPO",
-)
-
-
-
 pipeline_construct= PipleineConstruct(
     app,
     "CodePipelineFlask",

@@ -166,10 +166,10 @@ class PipleineConstruct(core.Stack):
                              targets=[self.cluster_service])
 
         cfn_deployment_config = codedeploy.CfnDeploymentConfig(self, "MyCfnDeploymentConfig",
-                                                               compute_platform="computePlatform",
+                                                               compute_platform="ECS",
                                                                deployment_config_name="deploymentConfigName",
                                                                minimum_healthy_hosts=codedeploy.CfnDeploymentConfig.MinimumHealthyHostsProperty(
-                                                                   type="type",
+                                                                   type="HOST_COUNT",
                                                                    value=2
                                                                ),
                                                                traffic_routing_config=codedeploy.CfnDeploymentConfig.TrafficRoutingConfigProperty(
