@@ -7,19 +7,21 @@ from aws_cdk import (
     aws_codedeploy as codedeploy,
     aws_codepipeline_actions as codepipeline_actions,
     aws_ecr as ecr,
+    aws_ecs as ecs,
     aws_iam as iam,
     core
 )
-from aws_cdk.aws_ecr_assets import DockerImageAsset
 
-class DockerPipelineConstruct(core.Stack):
+
+
+class Ecr_Commit_Construct(core.Stack):
     def __init__(
             self,
             scope: core.Construct,
             id: str,
+
     ) -> None:
         super().__init__(scope=scope, id=id)
-
         # ECR repositories
         self.container_repository = ecr.Repository(
             scope=self,
@@ -27,6 +29,12 @@ class DockerPipelineConstruct(core.Stack):
             repository_name="container_repo"
         )
 
-        asset=DockerImageAsset(self,"Flask_Docker_Image",
-                               directory="")
+        # code commit repo
+        self.codecommit_repo = codecommit.Repository(
+            scope=self,
+            id="flask-repo",
+            repository_name="flask-repo",
+            description="flask app and docker code"
+        )
+
 

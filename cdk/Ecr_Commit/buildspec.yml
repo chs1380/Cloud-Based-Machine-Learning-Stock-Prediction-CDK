@@ -18,3 +18,13 @@ phases:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
       - docker push flask_web_app:latest
+      -printf \'{"ImageURI":"%s"}\' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+  artifacts:
+    files:
+        - '*'
+    secondary-artifacts: [
+      {
+        imageDetail:
+          files:['imagedefinitions.json']
+      }
+    ]
