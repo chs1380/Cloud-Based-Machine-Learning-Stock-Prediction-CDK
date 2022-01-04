@@ -173,7 +173,7 @@ class PipleineConstruct(core.Stack):
                                                                    value=2
                                                                ),
                                                                traffic_routing_config=codedeploy.CfnDeploymentConfig.TrafficRoutingConfigProperty(
-                                                                   type="type",
+                                                                   type="TimeBasedCanary",
                                                                    # the properties below are optional
                                                                    time_based_canary=codedeploy.CfnDeploymentConfig.TimeBasedCanaryProperty(
                                                                        canary_interval=5,
