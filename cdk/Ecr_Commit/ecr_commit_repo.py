@@ -12,6 +12,8 @@ from aws_cdk import (
     core
 )
 
+from aws_cdk.aws_ecr_assets import DockerImageAsset
+
 
 
 class Ecr_Commit_Construct(core.Stack):
@@ -28,6 +30,7 @@ class Ecr_Commit_Construct(core.Stack):
             id="containter_repo",
             repository_name="container_repo"
         )
+
 
         # code commit repo
         self.codecommit_repo = codecommit.Repository(

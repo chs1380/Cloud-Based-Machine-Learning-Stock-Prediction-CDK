@@ -42,7 +42,7 @@ class ClusterConstruct(core.Stack):
         # create container
         task_definiton.add_container("WebContainer",
                                      image=ecs.ContainerImage.from_ecr_repository(
-                                          repo,tag="flask_web_app:latest"),
+                                          repo),
                                      memory_limit_mib=512,
                                      cpu=256,
                                      port_mappings=[ecs.PortMapping(container_port=8000)]

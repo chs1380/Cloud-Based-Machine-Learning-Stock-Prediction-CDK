@@ -7,6 +7,9 @@ from aws_cdk import (
     aws_ecr as ecr,
     aws_ecs as ecs,
     aws_iam as iam,
+    aws_ec2 as ec2,
+    aws_elasticloadbalancingv2 as elbv2,
+
     core
 )
 
@@ -16,7 +19,7 @@ class PipleineConstruct(core.Stack):
             self,
             scope: core.Construct,
             construct_id: str,
-            clusterService: ecs.FargateService,
+            props:ec2.Vpc,
             **kwargs
 
     ) -> None:
@@ -78,13 +81,14 @@ class PipleineConstruct(core.Stack):
             build_spec=buildspec_docker
         )
         # define role for building docker and grant push pull right to repo.
-        self.container_repository.grant_pull_push(build_docker)
 
         build_docker.add_to_role_policy(iam.PolicyStatement(
             effect=iam.Effect.ALLOW,
             actions=["ecr:BatchCheckLayerAvailability", "ecr:GetDownloadUrlForLayer", "ecr:BatchGetImage"],
             resources=[
                 f"arn:{core.Stack.of(self).partition}:ecr:{core.Stack.of(self).region}:{core.Stack.of(self).account}:repository/*"], ))
+
+        self.container_repository.grant_pull_push(build_docker.role)
 
         # stage in pipeline
 
@@ -105,6 +109,61 @@ class PipleineConstruct(core.Stack):
             "FLASK_APPLICATION",
             application_name="FLASK_APPLICATION"
         )
+
+        # create ecs cluster
+        cluster = ecs.Cluster(self, "Cluster",
+                              vpc=props
+                              )
+
+        # create task defintion
+        task_definiton = ecs.FargateTaskDefinition(
+            self, "TaskDef",
+        )
+        # task defintion policy
+        task_definiton.add_to_task_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                resources=["*"],
+                actions=[
+                    "ecr:GetAuthorizationToken",
+                    "ecr:BatchCheckLayerAvailability",
+                    "ecr:GetDownloadUrlForLayer",
+                    "ecr:BatchGetImage",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                ]
+            )
+        )
+        # create container
+        task_definiton.add_container("WebContainer",
+                                     image=ecs.ContainerImage.from_ecr_repository(
+                                         self.container_repository),
+                                     memory_limit_mib=512,
+                                     cpu=256,
+                                     port_mappings=[ecs.PortMapping(container_port=8000)]
+                                     )
+        # cluster Service
+        self.cluster_service = ecs.FargateService(
+            self,
+            "ECS-FARGATE-SERVICE",
+            cluster=cluster,
+            task_definition=task_definiton,
+            desired_count=2
+        )
+
+        scaling = self.cluster_service.auto_scale_task_count(max_capacity=6,
+                                                             min_capacity=2)
+        scaling.scale_on_cpu_utilization("cpu_scaling", target_utilization_percent=50)
+
+        load_balancer = elbv2.ApplicationLoadBalancer(self, "LB_FOR_FARGATE",
+                                                      vpc=props,
+                                                      vpc_subnets={"subnet_type": ec2.SubnetType.PUBLIC},
+                                                      internet_facing=True
+                                                      )
+        listener = load_balancer.add_listener("Listener", port=8000)
+        listener.add_targets("ECS-FARGATE",
+                             port=8000,
+                             targets=[self.cluster_service])
 
         cfn_deployment_config = codedeploy.CfnDeploymentConfig(self, "MyCfnDeploymentConfig",
                                                                compute_platform="computePlatform",
@@ -134,7 +193,7 @@ class PipleineConstruct(core.Stack):
             actions=[
                 codepipeline_actions.EcsDeployAction(
                     action_name='Deploy_to_ECS',
-                    service=clusterService,
+                    service=self.cluster_service,
                     image_file=codepipeline.ArtifactPath(docker_output,"imagedefinitions.json"),
                 )
             ]

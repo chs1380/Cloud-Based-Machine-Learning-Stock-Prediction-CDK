@@ -30,21 +30,13 @@ docker_pipeline_construct= Ecr_Commit_Construct(
     "ECR-REPO",
 )
 
-cluster_construct = ClusterConstruct(
-    app,
-    "ecs-fargate-cluster",
-    props=vpc_construct.vpc,
-    env=env_USA,
-    repo=docker_pipeline_construct.container_repository
-)
-cluster_construct.add_dependency(vpc_construct)
-cluster_construct.add_dependency(database_construct)
+
 
 pipeline_construct= PipleineConstruct(
     app,
     "CodePipelineFlask",
     env=core.Environment(region="us-east-1",account="169747529889"),
-    clusterService=cluster_construct.cluster_service
+    props=vpc_construct.vpc
 
 )
 
