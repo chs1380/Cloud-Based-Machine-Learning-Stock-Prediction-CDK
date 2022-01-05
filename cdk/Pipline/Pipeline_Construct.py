@@ -136,8 +136,6 @@ class PipleineConstruct(core.Stack):
         )
         # create container
         task_definiton.add_container("WebContainer",
-                                     image=ecs.ContainerImage.from_ecr_repository(
-                                         self.container_repository),
                                      memory_limit_mib=512,
                                      cpu=256,
                                      port_mappings=[ecs.PortMapping(container_port=8000)]
