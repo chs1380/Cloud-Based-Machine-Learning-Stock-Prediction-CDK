@@ -46,9 +46,6 @@ class PipleineConstruct(core.Stack):
             description="flask app and docker code"
         )
 
-
-
-
         get_source = codepipeline_actions.CodeCommitSourceAction(
             action_name="get_source_from_codeCommit",
             repository=self.codecommit_repo,
@@ -118,6 +115,7 @@ class PipleineConstruct(core.Stack):
         # create task defintion
         task_definiton = ecs.FargateTaskDefinition(
             self, "TaskDef",
+
         )
         # task defintion policy
         task_definiton.add_to_task_role_policy(
@@ -136,6 +134,8 @@ class PipleineConstruct(core.Stack):
         )
         # create container
         task_definiton.add_container("WebContainer",
+                                     image=ecs.ContainerImage.from_ecr_repository(
+                                         self.container_repository),
                                      memory_limit_mib=512,
                                      cpu=256,
                                      port_mappings=[ecs.PortMapping(container_port=8000)]
@@ -166,10 +166,6 @@ class PipleineConstruct(core.Stack):
         cfn_deployment_config = codedeploy.CfnDeploymentConfig(self, "MyCfnDeploymentConfig",
                                                                compute_platform="ECS",
                                                                deployment_config_name="deploymentConfigName",
-                                                               minimum_healthy_hosts=codedeploy.CfnDeploymentConfig.MinimumHealthyHostsProperty(
-                                                                   type="HOST_COUNT",
-                                                                   value=2
-                                                               ),
                                                                traffic_routing_config=codedeploy.CfnDeploymentConfig.TrafficRoutingConfigProperty(
                                                                    type="TimeBasedCanary",
                                                                    # the properties below are optional

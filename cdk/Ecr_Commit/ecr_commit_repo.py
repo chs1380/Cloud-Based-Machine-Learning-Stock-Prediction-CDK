@@ -9,6 +9,7 @@ from aws_cdk import (
     aws_ecr as ecr,
     aws_ecs as ecs,
     aws_iam as iam,
+    aws_ecr_assets as ecr_assets,
     core
 )
 
@@ -31,7 +32,14 @@ class Ecr_Commit_Construct(core.Stack):
             repository_name="container_repo"
         )
 
+        image_asset=ecr_assets.DockerImageAsset(self,"Flask_docker_image",
+                                    directory="/home/ec2-user/environment/hkbu_fyp_website",
+                                    repository_name="container_repo1")
 
+
+
+
+        self.container_repository.ap
         # code commit repo
         self.codecommit_repo = codecommit.Repository(
             scope=self,

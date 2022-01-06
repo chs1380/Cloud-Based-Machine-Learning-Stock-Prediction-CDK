@@ -1,7 +1,6 @@
 from aws_cdk import core
 from cdk.vpc_construct.fyp_vpc import VPC_stack
 from cdk.Database.Auroa_Serverless import Database_Stack
-from cdk.ecs_cluster_construct.ecs_cluster_construct import ClusterConstruct
 from cdk.Ecr_Commit.ecr_commit_repo import Ecr_Commit_Construct
 from cdk.Pipline.Pipeline_Construct import PipleineConstruct
 import os
