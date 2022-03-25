@@ -20,5 +20,6 @@ class VPC_stack(core.Stack):
                                    subnet_type=ec2.SubnetType.PRIVATE,
                                    cidr_mask=24)
                            ],
-                           nat_gateways=2,
+                           nat_gateways=2
                            )
+

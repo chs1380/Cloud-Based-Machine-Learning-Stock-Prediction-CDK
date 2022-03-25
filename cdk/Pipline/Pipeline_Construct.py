@@ -9,7 +9,6 @@ from aws_cdk import (
     aws_iam as iam,
     aws_ec2 as ec2,
     aws_elasticloadbalancingv2 as elbv2,
-
     core
 )
 
@@ -19,7 +18,7 @@ class PipleineConstruct(core.Stack):
             self,
             scope: core.Construct,
             construct_id: str,
-            props:ec2.Vpc,
+            props: ec2.Vpc,
             **kwargs
 
     ) -> None:
@@ -29,16 +28,18 @@ class PipleineConstruct(core.Stack):
                                          pipeline_name="Flask_App_Pipeline"
                                          )
 
+        # this block of code is to set artifact for out out put
         source_output = codepipeline.Artifact(artifact_name="source_output")
         docker_output = codepipeline.Artifact(artifact_name="Docker")
 
+        # create container repo
         self.container_repository = ecr.Repository(
             scope=self,
             id="containter_repo",
             repository_name="container_repo"
         )
 
-        # code commit repo
+        # code commit repo, repo name and description is defined.
         self.codecommit_repo = codecommit.Repository(
             scope=self,
             id="flask-repo",
@@ -46,6 +47,7 @@ class PipleineConstruct(core.Stack):
             description="flask app and docker code"
         )
 
+        # code commit source action get source code from code commit repo. And the branch is master.
         get_source = codepipeline_actions.CodeCommitSourceAction(
             action_name="get_source_from_codeCommit",
             repository=self.codecommit_repo,
@@ -53,7 +55,7 @@ class PipleineConstruct(core.Stack):
             branch="master"
         )
 
-        # pipline add first stage get repo code.
+        # pipeline add first stage get repo code. This stage is source stage which mean
         pipeline.add_stage(
             stage_name="Source",
             actions=[get_source]
@@ -61,10 +63,12 @@ class PipleineConstruct(core.Stack):
 
         # pipleine define build stage
 
-        # defind docker build spec
+        # define docker build spec, build spec is set of command that is use for building the environment and docker.
         buildspec_docker = codebuild.BuildSpec.from_source_filename("buildspec.yml")
 
-        # define action of build docker
+        # define action of build docker, this will set up the which image should use and the environment variable to
+        # get the ecr image.
+
         build_docker = codebuild.PipelineProject(
             self,
             "Build Docker",
@@ -78,7 +82,6 @@ class PipleineConstruct(core.Stack):
             build_spec=buildspec_docker
         )
         # define role for building docker and grant push pull right to repo.
-
         build_docker.add_to_role_policy(iam.PolicyStatement(
             effect=iam.Effect.ALLOW,
             actions=["ecr:BatchCheckLayerAvailability", "ecr:GetDownloadUrlForLayer", "ecr:BatchGetImage"],
@@ -89,6 +92,7 @@ class PipleineConstruct(core.Stack):
 
         # stage in pipeline
 
+        # this add build docker stage in the pipeline also know as build stage.
         pipeline.add_stage(
             stage_name="DockerBuild",
             actions=[
@@ -153,12 +157,12 @@ class PipleineConstruct(core.Stack):
                                                              min_capacity=2)
         scaling.scale_on_cpu_utilization("cpu_scaling", target_utilization_percent=50)
 
-        load_balancer = elbv2.ApplicationLoadBalancer(self, "LB_FOR_FARGATE",
+        self.load_balancer = elbv2.ApplicationLoadBalancer(self, "LB_FOR_FARGATE",
                                                       vpc=props,
                                                       vpc_subnets={"subnet_type": ec2.SubnetType.PUBLIC},
                                                       internet_facing=True
                                                       )
-        listener = load_balancer.add_listener("Listener", port=8000)
+        listener = self.load_balancer.add_listener("Listener", port=8000)
         listener.add_targets("ECS-FARGATE",
                              port=8000,
                              targets=[self.cluster_service])
@@ -172,8 +176,8 @@ class PipleineConstruct(core.Stack):
                                                                    time_based_canary=codedeploy.CfnDeploymentConfig.TimeBasedCanaryProperty(
                                                                        canary_interval=5,
                                                                        canary_percentage=20
-                                                                                ),
-                                                                        )
+                                                                   ),
+                                                               )
                                                                )
 
         ecs_deploymentGroup = codedeploy.EcsDeploymentGroup.from_ecs_deployment_group_attributes(self,
@@ -188,7 +192,7 @@ class PipleineConstruct(core.Stack):
                 codepipeline_actions.EcsDeployAction(
                     action_name='Deploy_to_ECS',
                     service=self.cluster_service,
-                    image_file=codepipeline.ArtifactPath(docker_output,"imagedefinitions.json"),
+                    image_file=codepipeline.ArtifactPath(docker_output, "imagedefinitions.json"),
                 )
             ]
         )
