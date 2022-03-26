@@ -22,4 +22,3 @@ class VPC_stack(core.Stack):
                            ],
                            nat_gateways=2
                            )
-

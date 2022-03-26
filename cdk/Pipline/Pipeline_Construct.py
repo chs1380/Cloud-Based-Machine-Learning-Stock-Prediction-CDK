@@ -11,8 +11,6 @@ from aws_cdk import (
     aws_elasticloadbalancingv2 as elbv2,
     core
 )
-
-
 class PipleineConstruct(core.Stack):
     def __init__(
             self,
