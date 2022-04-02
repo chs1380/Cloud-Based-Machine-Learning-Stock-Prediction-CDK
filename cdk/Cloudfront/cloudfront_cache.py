@@ -1,4 +1,3 @@
-import self
 from aws_cdk import (aws_cloudfront as cloudfront,
                      aws_elasticloadbalancingv2 as elbv2,
                      aws_cloudfront_origins as origins,

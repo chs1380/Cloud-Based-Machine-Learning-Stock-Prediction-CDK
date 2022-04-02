@@ -77,7 +77,7 @@ class PipleineConstruct(core.Stack):
                 'REPO_ECR': codebuild.BuildEnvironmentVariable(
                     value=self.container_repository.repository_uri),
             },
-            build_spec=buildspec_docker
+            build_spec=buildspec_docker,
         )
         # define role for building docker and grant push pull right to repo.
         build_docker.add_to_role_policy(iam.PolicyStatement(
