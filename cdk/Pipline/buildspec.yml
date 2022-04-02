@@ -25,4 +25,4 @@ phases:
     secondary-artifacts:
         imageDetail:
           files:
-            -imagedefinitions.json
+            - imagedefinitions.json
