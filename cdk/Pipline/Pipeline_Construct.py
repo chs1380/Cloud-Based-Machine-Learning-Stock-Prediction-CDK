@@ -76,6 +76,9 @@ class PipleineConstruct(core.Stack):
             environment_variables={
                 'REPO_ECR': codebuild.BuildEnvironmentVariable(
                     value=self.container_repository.repository_uri),
+                'Container_Name':codebuild.BuildEnvironmentVariable(
+                    value=self.container_repository.repository_name
+                )
             },
             build_spec=buildspec_docker,
         )
@@ -117,7 +120,6 @@ class PipleineConstruct(core.Stack):
         # create task defintion
         task_definiton = ecs.FargateTaskDefinition(
             self, "TaskDef",
-
         )
         # task defintion policy
         task_definiton.add_to_task_role_policy(
@@ -190,7 +192,7 @@ class PipleineConstruct(core.Stack):
                 codepipeline_actions.EcsDeployAction(
                     action_name='Deploy_to_ECS',
                     service=self.cluster_service,
-                    image_file=codepipeline.ArtifactPath(docker_output, "imagedefinitions.json"),
+                    image_file=codepipeline.ArtifactPath(docker_output,'imagedetail.json'),
                 )
             ]
         )

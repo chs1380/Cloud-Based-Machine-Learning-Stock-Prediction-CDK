@@ -12,5 +12,5 @@ class cloudfront_dist(core.Stack):
         super().__init__(scope, construct_id, **kwargs)
         self.cloud_dist = cloudfront.Distribution(self, "myDist",
                                                   default_behavior=cloudfront.BehaviorOptions(
-                                                      origin=origins.LoadBalancerV2Origin(props))
+                                                      origin=origins.LoadBalancerV2Origin(props)),
                                                   )
